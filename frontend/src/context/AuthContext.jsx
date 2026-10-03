@@ -26,8 +26,12 @@ export function AuthProvider({ children }) {
   });
 
   const [loading, setLoading] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
 
-  // Save/remove user from localStorage
+  // ==========================================
+  // SAVE USER
+  // ==========================================
+
   useEffect(() => {
     if (user) {
       localStorage.setItem(
@@ -39,9 +43,20 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  // Register
+  // ==========================================
+  // REGISTER
+  // ==========================================
+
   async function register(name, email, password) {
     setLoading(true);
+
+    // Remove any previous logged-in session.
+    // This prevents an old admin session from
+    // affecting the new account.
+
+    setUser(null);
+    localStorage.removeItem("anevora_token");
+    localStorage.removeItem("anevora_user");
 
     try {
       const response = await fetch(
@@ -54,8 +69,8 @@ export function AuthProvider({ children }) {
           },
 
           body: JSON.stringify({
-            name,
-            email,
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
             password,
           }),
         }
@@ -70,6 +85,9 @@ export function AuthProvider({ children }) {
         );
       }
 
+      // Backend registration must create
+      // a CUSTOMER account.
+
       localStorage.setItem(
         "anevora_token",
         data.token
@@ -86,9 +104,20 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Login
+  // ==========================================
+  // LOGIN
+  // ==========================================
+
   async function login(email, password) {
     setLoading(true);
+
+    // IMPORTANT:
+    // Clear any previously logged-in account
+    // before logging into another account.
+
+    setUser(null);
+    localStorage.removeItem("anevora_token");
+    localStorage.removeItem("anevora_user");
 
     try {
       const response = await fetch(
@@ -101,7 +130,7 @@ export function AuthProvider({ children }) {
           },
 
           body: JSON.stringify({
-            email,
+            email: email.trim().toLowerCase(),
             password,
           }),
         }
@@ -113,6 +142,12 @@ export function AuthProvider({ children }) {
         throw new Error(
           data.message ||
             "Unable to sign in."
+        );
+      }
+
+      if (!data.user) {
+        throw new Error(
+          "Login succeeded but user information was not returned."
         );
       }
 
@@ -132,7 +167,10 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Logout
+  // ==========================================
+  // LOGOUT
+  // ==========================================
+
   function logout() {
     localStorage.removeItem("anevora_token");
     localStorage.removeItem("anevora_user");
@@ -140,14 +178,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
-  // Restore authenticated user
-  // when the application starts
+  // ==========================================
+  // RESTORE AUTHENTICATED USER
+  // ==========================================
+
   useEffect(() => {
     async function restoreUser() {
       const token =
         localStorage.getItem("anevora_token");
 
       if (!token) {
+        setAuthChecking(false);
         return;
       }
 
@@ -183,6 +224,8 @@ export function AuthProvider({ children }) {
         );
 
         setUser(null);
+      } finally {
+        setAuthChecking(false);
       }
     }
 
@@ -193,6 +236,8 @@ export function AuthProvider({ children }) {
     user,
 
     loading,
+
+    authChecking,
 
     isAuthenticated: Boolean(user),
 

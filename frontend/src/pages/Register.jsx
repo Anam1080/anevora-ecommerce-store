@@ -20,6 +20,7 @@ export default function Register() {
     register,
     loading,
     isAuthenticated,
+    authChecking,
   } = useAuth();
 
   const [form, setForm] = useState({
@@ -36,10 +37,20 @@ export default function Register() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/", { replace: true });
+    if (authChecking) {
+      return;
     }
-  }, [isAuthenticated, navigate]);
+
+    if (isAuthenticated) {
+      navigate("/", {
+        replace: true,
+      });
+    }
+  }, [
+    authChecking,
+    isAuthenticated,
+    navigate,
+  ]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -71,13 +82,24 @@ export default function Register() {
     }
 
     try {
-      await register(
+      const result = await register(
         form.name,
         form.email,
         form.password
       );
 
-      navigate("/", { replace: true });
+      const registeredUser = result?.user;
+
+      if (!registeredUser) {
+        throw new Error(
+          "Account was created but user information was not returned."
+        );
+      }
+
+      // Normal registration creates a CUSTOMER account.
+      navigate("/", {
+        replace: true,
+      });
     } catch (registerError) {
       setError(
         registerError?.message ||
@@ -92,8 +114,10 @@ export default function Register() {
 
       <main className="auth-page">
         <section className="auth-layout auth-layout-reverse">
+
           <div className="auth-visual auth-register-visual">
             <div className="auth-visual-overlay">
+
               <p className="eyebrow light-eyebrow">
                 JOIN ANÉVORA
               </p>
@@ -108,12 +132,16 @@ export default function Register() {
                 Create your account and make every
                 ANÉVORA discovery yours.
               </p>
+
             </div>
           </div>
 
+
           <div className="auth-panel">
             <div className="auth-panel-inner">
+
               <div className="auth-heading">
+
                 <p className="eyebrow dark-eyebrow">
                   CREATE ACCOUNT
                 </p>
@@ -124,22 +152,30 @@ export default function Register() {
                   Create an account to save and manage
                   your favourite pieces.
                 </p>
+
               </div>
 
+
               {error && (
-                <div className="auth-error" role="alert">
+                <div
+                  className="auth-error"
+                  role="alert"
+                >
                   {error}
                 </div>
               )}
+
 
               <form
                 className="auth-form"
                 onSubmit={handleSubmit}
               >
+
                 <label className="form-field">
                   <span>Full name</span>
 
                   <div className="input-with-icon">
+
                     <UserRound
                       size={17}
                       strokeWidth={1.7}
@@ -154,13 +190,16 @@ export default function Register() {
                       autoComplete="name"
                       required
                     />
+
                   </div>
                 </label>
+
 
                 <label className="form-field">
                   <span>Email address</span>
 
                   <div className="input-with-icon">
+
                     <Mail
                       size={17}
                       strokeWidth={1.7}
@@ -175,13 +214,16 @@ export default function Register() {
                       autoComplete="email"
                       required
                     />
+
                   </div>
                 </label>
+
 
                 <label className="form-field">
                   <span>Password</span>
 
                   <div className="input-with-icon">
+
                     <Lock
                       size={17}
                       strokeWidth={1.7}
@@ -227,13 +269,16 @@ export default function Register() {
                         />
                       )}
                     </button>
+
                   </div>
                 </label>
+
 
                 <label className="form-field">
                   <span>Confirm password</span>
 
                   <div className="input-with-icon">
+
                     <Lock
                       size={17}
                       strokeWidth={1.7}
@@ -279,17 +324,23 @@ export default function Register() {
                         />
                       )}
                     </button>
+
                   </div>
                 </label>
 
+
                 <label className="terms-option">
-                  <input type="checkbox" required />
+                  <input
+                    type="checkbox"
+                    required
+                  />
 
                   <span>
                     I agree to the ANÉVORA terms and
                     privacy policy.
                   </span>
                 </label>
+
 
                 <button
                   type="submit"
@@ -305,11 +356,14 @@ export default function Register() {
                     strokeWidth={1.7}
                   />
                 </button>
+
               </form>
+
 
               <div className="auth-divider">
                 <span>OR</span>
               </div>
+
 
               <p className="auth-switch">
                 Already have an account?{" "}
@@ -318,16 +372,20 @@ export default function Register() {
                 </Link>
               </p>
 
+
               <div className="demo-note">
-                <strong>Secure checkout</strong>
+                <strong>ANÉVORA ACCOUNT</strong>
+
                 <span>
-                  Your account will later connect to the
-                  protected ANÉVORA backend and JWT
+                  Your account is securely connected
+                  to the ANÉVORA backend with JWT
                   authentication.
                 </span>
               </div>
+
             </div>
           </div>
+
         </section>
       </main>
 

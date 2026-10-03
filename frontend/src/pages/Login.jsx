@@ -17,7 +17,13 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { login, loading, isAuthenticated, isAdmin } = useAuth();
+  const {
+    login,
+    loading,
+    isAuthenticated,
+    isAdmin,
+    authChecking,
+  } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -27,11 +33,26 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  // Only redirect an already authenticated user
+  // after the existing session has been checked.
+
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(isAdmin ? "/admin" : "/", { replace: true });
+    if (authChecking) {
+      return;
     }
-  }, [isAuthenticated, isAdmin, navigate]);
+
+    if (isAuthenticated) {
+      navigate(
+        isAdmin ? "/admin" : "/",
+        { replace: true }
+      );
+    }
+  }, [
+    authChecking,
+    isAuthenticated,
+    isAdmin,
+    navigate,
+  ]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -51,15 +72,41 @@ export default function Login() {
     setError("");
 
     try {
-      await login(form.email, form.password);
+      const result = await login(
+        form.email,
+        form.password
+      );
+
+      const loggedInUser = result?.user;
+
+      if (!loggedInUser) {
+        throw new Error(
+          "Unable to retrieve account information."
+        );
+      }
 
       const from = location.state?.from?.pathname;
 
-      if (from) {
-        navigate(from, { replace: true });
-      } else {
-        navigate("/", { replace: true });
+      // Admin account -> Admin Dashboard
+      if (loggedInUser.role === "admin") {
+        navigate("/admin", {
+          replace: true,
+        });
+        return;
       }
+
+      // Customer account -> requested page
+      if (from && from !== "/login") {
+        navigate(from, {
+          replace: true,
+        });
+        return;
+      }
+
+      // Normal customer -> Home
+      navigate("/", {
+        replace: true,
+      });
     } catch (loginError) {
       setError(
         loginError?.message ||
@@ -73,7 +120,6 @@ export default function Login() {
       <Navbar />
 
       <main className="login-page">
-
         <section className="login-shell">
 
           {/* LEFT SIDE */}
@@ -295,26 +341,10 @@ export default function Login() {
                 </Link>
               </p>
 
-
-              <div className="login-demo">
-
-                <div className="login-demo-title">
-                  DEMO MODE
-                </div>
-
-                <p>
-                  Any valid email and password can
-                  be used while the backend is not
-                  connected.
-                </p>
-
-              </div>
-
             </div>
           </div>
 
         </section>
-
       </main>
 
       <Footer />
