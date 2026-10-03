@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+
       match: [
         /^\S+@\S+\.\S+$/,
         "Please enter a valid email address.",
@@ -29,6 +30,10 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    // ==========================================
+    // CUSTOMER IS THE DEFAULT ROLE
+    // ==========================================
+
     role: {
       type: String,
       enum: ["customer", "admin"],
@@ -40,9 +45,13 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
   },
+
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model(
+  "User",
+  userSchema
+);

@@ -7,6 +7,10 @@ function generateOrderNumber() {
   return `AN-${timestamp}-${random}`;
 }
 
+// ==========================================
+// CREATE ORDER
+// ==========================================
+
 const createOrder = async (req, res) => {
   try {
     const {
@@ -57,10 +61,7 @@ const createOrder = async (req, res) => {
       paymentStatus = pending
 
       CARD:
-      This project uses a demo card-payment flow.
-      No real payment gateway is connected.
-      Therefore the demo card payment is considered
-      successful when the order is created.
+      Demo card payment is considered successful.
     */
 
     const paymentStatus =
@@ -129,6 +130,10 @@ const createOrder = async (req, res) => {
   }
 };
 
+// ==========================================
+// GET MY ORDERS
+// ==========================================
+
 const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({
@@ -155,6 +160,10 @@ const getMyOrders = async (req, res) => {
     });
   }
 };
+
+// ==========================================
+// GET MY SINGLE ORDER
+// ==========================================
 
 const getMyOrderById = async (
   req,
@@ -191,8 +200,73 @@ const getMyOrderById = async (
   }
 };
 
+// ==========================================
+// CANCEL MY ORDER
+// ==========================================
+
+const cancelMyOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user.userId,
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found.",
+      });
+    }
+
+    // Customer can only cancel orders that
+    // have not been shipped yet.
+
+    if (
+      !["Processing", "Confirmed"].includes(
+        order.status
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "This order can no longer be cancelled.",
+      });
+    }
+
+    order.status = "Cancelled";
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully.",
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        total: order.total,
+        createdAt: order.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Cancel order error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to cancel order.",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getMyOrders,
   getMyOrderById,
+  cancelMyOrder,
 };

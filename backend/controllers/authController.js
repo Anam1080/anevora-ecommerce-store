@@ -16,6 +16,10 @@ function generateToken(user) {
   );
 }
 
+// ==========================================
+// REGISTER
+// ==========================================
+
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -62,18 +66,28 @@ const registerUser = async (req, res) => {
       12
     );
 
+    // ==========================================
+    // IMPORTANT:
+    // EVERY NEW ACCOUNT IS CUSTOMER
+    // ==========================================
+
     const user = await User.create({
       name: trimmedName,
       email: normalizedEmail,
       password: hashedPassword,
       role: "customer",
+      isActive: true,
     });
 
     const token = generateToken(user);
 
+    console.log(
+      `✅ New customer registered: ${user.email} | role=${user.role}`
+    );
+
     return res.status(201).json({
       success: true,
-      message: "Account created successfully.",
+      message: "Customer account created successfully.",
       token,
       user: {
         id: user._id,
@@ -88,10 +102,13 @@ const registerUser = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Unable to create account.",
-      error: error.message,
     });
   }
 };
+
+// ==========================================
+// LOGIN
+// ==========================================
 
 const loginUser = async (req, res) => {
   try {
@@ -104,7 +121,8 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail =
+      email.trim().toLowerCase();
 
     const user = await User.findOne({
       email: normalizedEmail,
@@ -120,8 +138,7 @@ const loginUser = async (req, res) => {
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
-        message:
-          "This account has been deactivated.",
+        message: "This account has been deactivated.",
       });
     }
 
@@ -138,6 +155,10 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user);
+
+    console.log(
+      `🔐 Login: ${user.email} | role=${user.role}`
+    );
 
     return res.status(200).json({
       success: true,
@@ -156,14 +177,19 @@ const loginUser = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Unable to sign in.",
-      error: error.message,
     });
   }
 };
 
+// ==========================================
+// CURRENT USER
+// ==========================================
+
 const getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(
+      req.user.userId
+    );
 
     if (!user || !user.isActive) {
       return res.status(404).json({
@@ -182,12 +208,14 @@ const getCurrentUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get current user error:", error);
+    console.error(
+      "Get current user error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
       message: "Unable to fetch user profile.",
-      error: error.message,
     });
   }
 };
