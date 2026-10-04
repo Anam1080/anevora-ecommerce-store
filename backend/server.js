@@ -30,6 +30,8 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
+      "https://anevora-ecommerce-store-frontend.vercel.app",
+      "https://anevora-ecommerce-store-frontend-delvigiry-anam1080.vercel.app",
     ],
   })
 );
