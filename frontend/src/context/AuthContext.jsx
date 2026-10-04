@@ -9,7 +9,7 @@ const AuthContext = createContext(null);
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
+  "https://anevora-ecommerce-store-production.up.railway.app/api";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {

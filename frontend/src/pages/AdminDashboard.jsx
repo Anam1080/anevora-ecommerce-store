@@ -15,7 +15,7 @@ import { useAuth } from "../context/AuthContext";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
+  "https://anevora-ecommerce-store-production.up.railway.app/api";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-PK").format(

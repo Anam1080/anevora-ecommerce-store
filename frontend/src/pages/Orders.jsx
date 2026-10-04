@@ -13,7 +13,7 @@ import { useAuth } from "../context/AuthContext";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api";
+  "https://anevora-ecommerce-store-production.up.railway.app/api";
 
 const imageFiles = import.meta.glob(
   "../assets/**/*.{jpg,jpeg,png,webp}",
