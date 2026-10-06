@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -20,7 +21,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // =====================================================
-// CORS
+// CORS CONFIGURATION
 // =====================================================
 
 const allowedOrigins = [
@@ -34,47 +35,53 @@ const allowedOrigins = [
   "https://anevora-ecommerce-store-frontend-delvigiry-anam1080.vercel.app",
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests without an origin
-      // such as Postman/server-side requests
-      if (!origin) {
-        return callback(null, true);
-      }
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests without an Origin
+    // Example: Postman, curl, server-to-server requests
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      // Allow known origins
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+    // Allow exact known origins
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-      // Allow Vercel preview deployments
-      if (origin.endsWith(".vercel.app")) {
-        return callback(null, true);
-      }
+    // Allow all Vercel deployments
+    if (origin.endsWith(".vercel.app")) {
+      return callback(null, true);
+    }
 
-      return callback(
-        new Error("Not allowed by CORS")
-      );
-    },
+    console.log("CORS blocked origin:", origin);
 
-    methods: [
-      "GET",
-      "POST",
-      "PUT",
-      "PATCH",
-      "DELETE",
-      "OPTIONS",
-    ],
+    return callback(new Error("Not allowed by CORS"));
+  },
 
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-    ],
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ],
 
-    credentials: true,
-  })
-);
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+  ],
+
+  credentials: true,
+
+  optionsSuccessStatus: 204,
+};
+
+// Apply CORS
+app.use(cors(corsOptions));
+
+// Explicitly handle preflight requests
+app.options("*", cors(corsOptions));
 
 // =====================================================
 // BODY PARSER
@@ -118,7 +125,7 @@ app.use(
 );
 
 // =====================================================
-// ROOT
+// ROOT ROUTE
 // =====================================================
 
 app.get("/", (req, res) => {
@@ -173,6 +180,14 @@ app.use((req, res) => {
 app.use((error, req, res, next) => {
   console.error("Server error:", error);
 
+  // Handle CORS errors
+  if (error.message === "Not allowed by CORS") {
+    return res.status(403).json({
+      success: false,
+      message: "CORS policy blocked this request.",
+    });
+  }
+
   res.status(500).json({
     success: false,
     message: "Internal server error.",
@@ -218,3 +233,4 @@ app.listen(PORT, () => {
 
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 });
+
