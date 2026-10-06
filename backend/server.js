@@ -13,44 +13,84 @@ const adminOrderRoutes = require("./routes/adminOrderRoutes");
 const adminProductRoutes = require("./routes/adminProductRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 
-const {
-  protect,
-} = require("./middleware/authMiddleware");
+const { protect } = require("./middleware/authMiddleware");
 
 const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// ================================
+// =====================================================
 // CORS
-// ================================
+// =====================================================
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+
+  // ANÉVORA Production
+  "https://anevora-ecommerce-store-frontend.vercel.app",
+
+  // ANÉVORA Vercel Deployment
+  "https://anevora-ecommerce-store-frontend-delvigiry-anam1080.vercel.app",
+];
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://anevora-ecommerce-store-frontend.vercel.app",
-      "https://anevora-ecommerce-store-frontend-delvigiry-anam1080.vercel.app",
+    origin: function (origin, callback) {
+      // Allow requests without an origin
+      // such as Postman/server-side requests
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Allow known origins
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Allow Vercel preview deployments
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      return callback(
+        new Error("Not allowed by CORS")
+      );
+    },
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
     ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
+
+    credentials: true,
   })
 );
 
-// ================================
+// =====================================================
 // BODY PARSER
-// ================================
+// =====================================================
 
 app.use(express.json());
 
-// ================================
+// =====================================================
 // DATABASE
-// ================================
+// =====================================================
 
 connectDB();
 
-// ================================
+// =====================================================
 // PUBLIC ROUTES
-// ================================
+// =====================================================
 
 app.use("/api/products", productRoutes);
 
@@ -58,19 +98,28 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/orders", orderRoutes);
 
-// ================================
+// =====================================================
 // ADMIN ROUTES
-// ================================
+// =====================================================
 
-app.use("/api/admin/orders", adminOrderRoutes);
+app.use(
+  "/api/admin/orders",
+  adminOrderRoutes
+);
 
-app.use("/api/admin/products", adminProductRoutes);
+app.use(
+  "/api/admin/products",
+  adminProductRoutes
+);
 
-app.use("/api/admin/users", adminUserRoutes);
+app.use(
+  "/api/admin/users",
+  adminUserRoutes
+);
 
-// ================================
+// =====================================================
 // ROOT
-// ================================
+// =====================================================
 
 app.get("/", (req, res) => {
   res.json({
@@ -79,9 +128,9 @@ app.get("/", (req, res) => {
   });
 });
 
-// ================================
+// =====================================================
 // HEALTH CHECK
-// ================================
+// =====================================================
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -90,9 +139,9 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// ================================
+// =====================================================
 // PROTECTED AUTH TEST
-// ================================
+// =====================================================
 
 app.get(
   "/api/auth/protected-test",
@@ -106,9 +155,9 @@ app.get(
   }
 );
 
-// ================================
+// =====================================================
 // 404 HANDLER
-// ================================
+// =====================================================
 
 app.use((req, res) => {
   res.status(404).json({
@@ -117,9 +166,9 @@ app.use((req, res) => {
   });
 });
 
-// ================================
+// =====================================================
 // ERROR HANDLER
-// ================================
+// =====================================================
 
 app.use((error, req, res, next) => {
   console.error("Server error:", error);
@@ -130,32 +179,42 @@ app.use((error, req, res, next) => {
   });
 });
 
-// ================================
+// =====================================================
 // START SERVER
-// ================================
+// =====================================================
 
 app.listen(PORT, () => {
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   console.log("ANÉVORA Backend");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log(`Server: http://localhost:${PORT}`);
+
+  console.log(
+    `Server: http://localhost:${PORT}`
+  );
+
   console.log(
     `Products: http://localhost:${PORT}/api/products`
   );
+
   console.log(
     `Auth: http://localhost:${PORT}/api/auth`
   );
+
   console.log(
     `Orders: http://localhost:${PORT}/api/orders`
   );
+
   console.log(
     `Admin Orders: http://localhost:${PORT}/api/admin/orders`
   );
+
   console.log(
     `Admin Products: http://localhost:${PORT}/api/admin/products`
   );
+
   console.log(
     `Admin Users: http://localhost:${PORT}/api/admin/users`
   );
+
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 });

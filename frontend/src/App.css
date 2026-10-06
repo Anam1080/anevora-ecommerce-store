@@ -16888,3 +16888,32 @@ button:active {
     min-height: 48px;
   }
 }
+/* =========================================================
+   ANÉVORA — STICKY NAVBAR FIX
+   ========================================================= */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+}
+
+/* Keep navbar above all page content */
+.navbar-inner {
+  position: relative;
+  z-index: 10000;
+}
+
+/* Search panel stays below navbar */
+.search-panel {
+  position: relative;
+  z-index: 9998;
+}
+
+/* Mobile menu stays above page content */
+.mobile-menu {
+  position: relative;
+  z-index: 9997;
+}
