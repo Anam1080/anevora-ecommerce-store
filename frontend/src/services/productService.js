@@ -1,5 +1,5 @@
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://anevora-ecommerce-store-production.up.railway.app/api";
+  import.meta.env.VITE_API_URL || "https://anevora-ecommerce-store-production-c300.up.railway.app/api";
 
 // Get all products
 export async function getProducts() {
