@@ -14,7 +14,7 @@ import Footer from "../components/Footer";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "https://anevora-ecommerce-store-production-c300.up.railway.app/api"
+  "https://anevora-ecommerce-store-production.up.railway.app/api"
 function formatPrice(price) {
   return new Intl.NumberFormat("en-PK").format(
     price || 0
